@@ -1,6 +1,6 @@
 import React from 'react';
 import { SimulationParams, ForceMode } from '../types';
-import { Play, RotateCcw, Box, FastForward, Timer, Ruler, MousePointerClick, Infinity as InfinityIcon } from 'lucide-react';
+import { Play, RotateCcw, Box, FastForward, Timer, Ruler, MousePointerClick, Infinity as InfinityIcon, Eye, EyeOff } from 'lucide-react';
 
 interface ControlsProps {
   params: SimulationParams;
@@ -9,6 +9,10 @@ interface ControlsProps {
   onReset: () => void;
   isRunning: boolean;
   isFinished: boolean;
+  showForceValues: boolean;
+  onToggleShowForceValues: () => void;
+  showStaticLimit: boolean;
+  onToggleShowStaticLimit: () => void;
 }
 
 const Controls: React.FC<ControlsProps> = ({ 
@@ -17,7 +21,11 @@ const Controls: React.FC<ControlsProps> = ({
   onStart, 
   onReset, 
   isRunning,
-  isFinished 
+  isFinished,
+  showForceValues,
+  onToggleShowForceValues,
+  showStaticLimit,
+  onToggleShowStaticLimit
 }) => {
 
   const handleMassChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -181,6 +189,26 @@ const Controls: React.FC<ControlsProps> = ({
 
          {/* Spacer/Divider */}
          <div className="hidden sm:block w-px h-6 bg-slate-100 mx-2"></div>
+
+         {/* Show Force Values Toggle */}
+         <button
+            onClick={onToggleShowForceValues}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${showForceValues ? 'bg-slate-100 border-slate-300 text-slate-800' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'}`}
+            title="Show force magnitudes on diagram"
+         >
+            {showForceValues ? <Eye size={14} /> : <EyeOff size={14} />}
+            {showForceValues ? 'Hide Values' : 'Show Values'}
+         </button>
+
+         {/* Show Static Limit Toggle */}
+         <button
+            onClick={onToggleShowStaticLimit}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${showStaticLimit ? 'bg-slate-100 border-slate-300 text-slate-800' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'}`}
+            title="Show maximum static friction limit"
+         >
+            {showStaticLimit ? <Eye size={14} /> : <EyeOff size={14} />}
+            {showStaticLimit ? 'Hide Static Limit' : 'Show Static Limit'}
+         </button>
 
          {/* Action Buttons */}
          <div className="flex gap-2">

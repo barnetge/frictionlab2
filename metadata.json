@@ -1,5 +1,5 @@
 {
-  "name": "Copy of Friction Physics Simulator",
+  "name": "threesurfaceFriction",
   "description": "A physics simulation app comparing movement on Ice, Normal, and Rough surfaces using static and kinetic friction principles, powered by Gemini for educational insights.",
   "requestFramePermissions": []
 }

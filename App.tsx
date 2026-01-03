@@ -18,6 +18,8 @@ const App: React.FC = () => {
   const [states, setStates] = useState<SimulationState[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
+  const [showForceValues, setShowForceValues] = useState(false);
+  const [showStaticLimit, setShowStaticLimit] = useState(false);
   
   const animationRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
@@ -28,7 +30,7 @@ const App: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Run once on mount
 
-  const resetSimulation = () => {
+  const resetSimulation = (currentParams: SimulationParams = params) => {
     const initialStates: SimulationState[] = surfaceConfigs.map(s => ({
       id: s.type,
       position: 0,
@@ -38,7 +40,7 @@ const App: React.FC = () => {
       isFinished: false,
       status: 'static',
       frictionForce: 0,
-      currentAppliedForce: 0
+      currentAppliedForce: currentParams.appliedForce // Initialize with current applied force
     }));
     setStates(initialStates);
     setIsRunning(false);
@@ -70,9 +72,8 @@ const App: React.FC = () => {
         return {
           ...s,
           kineticFrictionCoeff: newKinetic,
-          // Heuristic: Static friction is usually slightly higher than kinetic.
-          // We update static to be at least kinetic + 0.05 to maintain physics logic.
-          staticFrictionCoeff: Math.max(s.staticFrictionCoeff, newKinetic + 0.05)
+          // Enforce static friction is always 0.1 greater than kinetic
+          staticFrictionCoeff: parseFloat((newKinetic + 0.1).toFixed(2))
         };
       }
       return s;
@@ -251,11 +252,15 @@ const App: React.FC = () => {
         
         <Controls 
           params={params}
-          onParamsChange={(p) => { setParams(p); resetSimulation(); }}
+          onParamsChange={(p) => { setParams(p); resetSimulation(p); }}
           onStart={handleStart}
-          onReset={resetSimulation}
+          onReset={() => resetSimulation()}
           isRunning={isRunning}
           isFinished={isFinished}
+          showForceValues={showForceValues}
+          onToggleShowForceValues={() => setShowForceValues(prev => !prev)}
+          showStaticLimit={showStaticLimit}
+          onToggleShowStaticLimit={() => setShowStaticLimit(prev => !prev)}
         />
 
         {/* Tracks */}
@@ -272,6 +277,8 @@ const App: React.FC = () => {
                   params={params}
                   onFrictionChange={handleFrictionChange}
                   readOnly={isRunning}
+                  showForceValues={showForceValues}
+                  showStaticLimit={showStaticLimit}
                />
              );
            })}

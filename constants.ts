@@ -5,7 +5,7 @@ export const GRAVITY = 9.81; // m/s^2
 export const SURFACES: SurfaceConfig[] = [
   {
     type: SurfaceType.ICE,
-    staticFrictionCoeff: 0.15, // Default static (slightly > kinetic)
+    staticFrictionCoeff: 0.2, // Updated: Kinetic (0.1) + 0.1
     kineticFrictionCoeff: 0.1, // Default kinetic (start of range)
     frictionRange: [0.1, 0.3],
     color: 'bg-cyan-200 border-cyan-400',
