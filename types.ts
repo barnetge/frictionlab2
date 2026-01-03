@@ -1,7 +1,8 @@
+
 export enum SurfaceType {
   ICE = 'Ice',
-  NORMAL = 'Normal',
-  ROUGH = 'Rough'
+  NORMAL = 'Floor',
+  ROUGH = 'Rough (like Sandpaper)'
 }
 
 export type ForceMode = 'continuous' | 'impulse' | 'timed' | 'distance';

@@ -40,7 +40,6 @@ const Track: React.FC<TrackProps> = ({ surface, state, params, onFrictionChange,
   const appForce = state.currentAppliedForce;
 
   // Face Logic: Determine emotion based on force comparison
-  // Using a small epsilon (0.1) for floating point comparison "equality"
   let emotion: 'idle' | 'happy' | 'sad' | 'neutral' | 'ecstatic' = 'idle';
   
   if (state.status === 'finished') {
@@ -75,6 +74,16 @@ const Track: React.FC<TrackProps> = ({ surface, state, params, onFrictionChange,
   const appVal = state.currentAppliedForce.toFixed(0);
   const fricVal = state.frictionForce.toFixed(1);
   const staticMaxVal = fStaticMax.toFixed(1);
+
+  // Helper for color indicator mapping to new names
+  const getIndicatorColor = (type: SurfaceType) => {
+    switch (type) {
+      case SurfaceType.ICE: return 'bg-cyan-500';
+      case SurfaceType.NORMAL: return 'bg-slate-500';
+      case SurfaceType.ROUGH: return 'bg-orange-500';
+      default: return 'bg-indigo-500';
+    }
+  };
 
   return (
     <div className="flex h-36 mb-3 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
@@ -235,10 +244,10 @@ const Track: React.FC<TrackProps> = ({ surface, state, params, onFrictionChange,
       {/* RIGHT: Dashboard & Controls */}
       <div className="w-72 bg-white border-l border-slate-100 flex divide-x divide-slate-100">
           
-          <div className="flex-1 p-3 flex flex-col justify-between">
+          <div className="flex-1 p-3 flex flex-col justify-between overflow-hidden">
               <div className="flex items-center gap-2 mb-2">
-                  <span className={`w-3 h-3 rounded-full ${surface.type === 'Ice' ? 'bg-cyan-500' : surface.type === 'Normal' ? 'bg-slate-500' : 'bg-orange-500'}`}></span>
-                  <h3 className="font-bold text-sm text-slate-700">{surface.type}</h3>
+                  <span className={`w-3 h-3 rounded-full shrink-0 ${getIndicatorColor(surface.type)}`}></span>
+                  <h3 className="font-bold text-xs text-slate-700 truncate">{surface.type}</h3>
               </div>
               
               <div className="grid grid-cols-2 gap-2">
@@ -271,7 +280,7 @@ const Track: React.FC<TrackProps> = ({ surface, state, params, onFrictionChange,
               </div>
           </div>
 
-          <div className="w-16 bg-slate-50 flex flex-col items-center justify-between py-3 relative">
+          <div className="w-16 bg-slate-50 flex flex-col items-center justify-between py-3 relative shrink-0">
              <label htmlFor={`slider-${surface.type}`} className="text-[10px] font-bold text-slate-500">μk</label>
              <div className="flex-1 w-full flex items-center justify-center relative">
                 <input 

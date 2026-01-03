@@ -6,8 +6,8 @@ export const GRAVITY = 9.81; // m/s^2
 export const SURFACES: SurfaceConfig[] = [
   {
     type: SurfaceType.ICE,
-    staticFrictionCoeff: 0.2, // Updated: Kinetic (0.1) + 0.1
-    kineticFrictionCoeff: 0.1, // Default kinetic (start of range)
+    staticFrictionCoeff: 0.2,
+    kineticFrictionCoeff: 0.1,
     frictionRange: [0.1, 0.3],
     color: 'bg-cyan-200 border-cyan-400',
     description: 'Very smooth surface with minimal resistance.'
@@ -18,7 +18,7 @@ export const SURFACES: SurfaceConfig[] = [
     kineticFrictionCoeff: 0.3,
     frictionRange: [0.3, 0.6],
     color: 'bg-slate-300 border-slate-500',
-    description: 'Standard surface like wood or concrete.'
+    description: 'Standard floor surface like wood or tile.'
   },
   {
     type: SurfaceType.ROUGH,
@@ -26,12 +26,12 @@ export const SURFACES: SurfaceConfig[] = [
     kineticFrictionCoeff: 0.6,
     frictionRange: [0.6, 1.0],
     color: 'bg-orange-200 border-orange-500',
-    description: 'High friction surface like sandpaper or rubber.'
+    description: 'High friction surface similar to sandpaper or heavy rubber.'
   }
 ];
 
 export const INITIAL_PARAMS = {
-  mass: 10, // kg - Updated from 1 to 10
+  mass: 10, // kg
   distance: 500, // m
   appliedForce: 150, // N
   forceMode: 'continuous' as ForceMode,
