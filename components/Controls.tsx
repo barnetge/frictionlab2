@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { SimulationParams, ForceMode } from '../types';
 import { Play, RotateCcw, Box, FastForward, Timer, Ruler, MousePointerClick, Infinity as InfinityIcon, Eye, EyeOff } from 'lucide-react';
@@ -31,6 +32,8 @@ const Controls: React.FC<ControlsProps> = ({
   const handleMassChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let val = parseFloat(e.target.value);
     if (isNaN(val)) val = 1;
+    if (val > 1000) val = 1000;
+    if (val < 1) val = 1;
     onParamsChange({ ...params, mass: val });
   };
 
@@ -65,21 +68,36 @@ const Controls: React.FC<ControlsProps> = ({
       <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-center justify-between mb-4 pb-4 border-b border-slate-100">
         
         <div className="flex flex-wrap gap-6 items-center flex-1 w-full">
-            {/* Mass Input */}
-            <div>
-                <label htmlFor="mass-input" className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1 flex items-center gap-1">
-                    <Box size={12} /> Mass (kg)
+            {/* Mass Input & Slider */}
+            <div className="flex-1 min-w-[200px] max-w-sm">
+                <label htmlFor="mass-input" className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1 flex items-center justify-between">
+                    <span className="flex items-center gap-1"><Box size={12} /> Mass</span>
+                    <span className="text-[9px] text-slate-400 font-normal">1 - 1000 kg</span>
                 </label>
-                <input
-                    id="mass-input"
-                    type="number"
-                    min="1"
-                    max="1000"
-                    value={params.mass}
-                    onChange={handleMassChange}
-                    disabled={isRunning}
-                    className="w-24 px-2 py-1.5 bg-slate-50 border border-slate-300 rounded text-slate-700 font-mono text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors disabled:opacity-60"
-                />
+                <div className="flex items-center gap-3">
+                    <input
+                        type="range"
+                        min="1"
+                        max="1000"
+                        step="1"
+                        value={params.mass}
+                        onChange={handleMassChange}
+                        disabled={isRunning}
+                        className="flex-grow h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 disabled:opacity-50"
+                    />
+                    <div className="relative">
+                        <input
+                            id="mass-input"
+                            type="number"
+                            min="1"
+                            max="1000"
+                            value={params.mass}
+                            onChange={handleMassChange}
+                            disabled={isRunning}
+                            className="w-20 px-1.5 py-1 bg-white border border-slate-300 rounded text-right text-slate-700 font-mono text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+                        />
+                    </div>
+                </div>
             </div>
 
             {/* Force Control */}
@@ -111,7 +129,6 @@ const Controls: React.FC<ControlsProps> = ({
                             disabled={isRunning}
                             className="w-20 px-1.5 py-1 bg-white border border-slate-300 rounded text-right text-slate-700 font-mono text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
                         />
-                        <span className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-400 text-[10px] pointer-events-none hidden">N</span>
                     </div>
                 </div>
             </div>

@@ -1,3 +1,4 @@
+
 import { SurfaceConfig, SurfaceType, ForceMode } from './types';
 
 export const GRAVITY = 9.81; // m/s^2
@@ -30,7 +31,7 @@ export const SURFACES: SurfaceConfig[] = [
 ];
 
 export const INITIAL_PARAMS = {
-  mass: 1, // kg
+  mass: 10, // kg - Updated from 1 to 10
   distance: 500, // m
   appliedForce: 150, // N
   forceMode: 'continuous' as ForceMode,

@@ -27,6 +27,34 @@ const Track: React.FC<TrackProps> = ({ surface, state, params, onFrictionChange,
     }
   };
 
+  // Adaptive Force Scaling Function
+  const getScaledLength = (f: number) => {
+    if (f === 0) return 0;
+    const absF = Math.abs(f);
+    return Math.log10(absF + 1) * 15;
+  };
+
+  // Calculate Forces
+  const normalForce = params.mass * 9.81;
+  const fStaticMax = surface.staticFrictionCoeff * normalForce;
+  const appForce = state.currentAppliedForce;
+
+  // Face Logic: Determine emotion based on force comparison
+  // Using a small epsilon (0.1) for floating point comparison "equality"
+  let emotion: 'idle' | 'happy' | 'sad' | 'neutral' | 'ecstatic' = 'idle';
+  
+  if (state.status === 'finished') {
+    emotion = 'ecstatic';
+  } else if (appForce > 0) {
+    if (appForce > fStaticMax + 0.1) {
+      emotion = 'happy';
+    } else if (Math.abs(appForce - fStaticMax) <= 0.1) {
+      emotion = 'neutral';
+    } else {
+      emotion = 'sad';
+    }
+  }
+
   // Calculate Net Force based on dynamic state
   let netForce = 0;
   if (state.status === 'moving') {
@@ -35,29 +63,18 @@ const Track: React.FC<TrackProps> = ({ surface, state, params, onFrictionChange,
     netForce = 0;
   }
 
-  // Visualization scales
-  const MAX_ARROW_LEN = 65; 
-  const FORCE_SCALE = 0.04; 
-  
-  const fAppLen = Math.min(state.currentAppliedForce * FORCE_SCALE, MAX_ARROW_LEN);
-  const fFricLen = Math.min(state.frictionForce * FORCE_SCALE, MAX_ARROW_LEN);
-
-  // Static Friction Limit Visualization (fs,max = us * N)
-  const fStaticMax = surface.staticFrictionCoeff * params.mass * 9.81;
-  const fStaticMaxLen = Math.min(fStaticMax * FORCE_SCALE, MAX_ARROW_LEN);
-  const staticMaxVal = fStaticMax.toFixed(1);
-  
-  const fNormLen = 25;
-  const fGravLen = 25;
+  const fAppLen = getScaledLength(state.currentAppliedForce);
+  const fFricLen = getScaledLength(state.frictionForce);
+  const fStaticMaxLen = getScaledLength(fStaticMax);
+  const fNormLen = getScaledLength(normalForce);
+  const fGravLen = fNormLen;
 
   // Format values for display
-  const normalVal = (params.mass * 9.81).toFixed(1);
-  const gravVal = (params.mass * 9.81).toFixed(1);
+  const normalVal = normalForce.toFixed(1);
+  const gravVal = normalForce.toFixed(1);
   const appVal = state.currentAppliedForce.toFixed(0);
   const fricVal = state.frictionForce.toFixed(1);
-
-  // Condition for visual feedback: Trying to push while static
-  const isStuckByFriction = state.status === 'static' && params.appliedForce > 0 && state.currentAppliedForce > 0;
+  const staticMaxVal = fStaticMax.toFixed(1);
 
   return (
     <div className="flex h-36 mb-3 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
@@ -92,25 +109,47 @@ const Track: React.FC<TrackProps> = ({ surface, state, params, onFrictionChange,
                   style={{ left: `${visualLeft}%` }}
                 >
                     <div className="relative group w-fit">
-                        {/* Cute Block Character */}
+                        {/* Expressive Block Character */}
                         <div className="relative z-20 filter drop-shadow-md pb-1">
                             <div className={`relative w-16 h-16 rounded-2xl flex flex-col items-center justify-center border-b-4 transition-all duration-300 ${
-                                state.status === 'finished' 
+                                emotion === 'ecstatic' 
                                     ? 'bg-emerald-400 border-emerald-600 scale-110' 
-                                    : isStuckByFriction ? 'bg-rose-400 border-rose-600' : 'bg-violet-500 border-violet-700'
+                                    : emotion === 'sad' ? 'bg-rose-400 border-rose-600' : 'bg-violet-500 border-violet-700'
                             }`}>
                                 {/* Eyes */}
-                                <div className="flex gap-4 mb-1">
+                                <div className="flex gap-4 mb-2">
                                     <div className="w-3 h-3 bg-white rounded-full flex items-center justify-center relative overflow-hidden">
-                                        <div className={`absolute right-0.5 top-0.5 w-1.5 h-1.5 bg-slate-900 rounded-full transition-transform ${state.status === 'moving' ? 'scale-y-75' : ''}`}></div>
+                                        <div className={`absolute w-1.5 h-1.5 bg-slate-900 rounded-full transition-all duration-300 ${
+                                          emotion === 'happy' || emotion === 'ecstatic' ? 'translate-y-[-1px]' : 
+                                          emotion === 'sad' ? 'translate-y-[1px]' : ''
+                                        }`}></div>
                                     </div>
                                     <div className="w-3 h-3 bg-white rounded-full flex items-center justify-center relative overflow-hidden">
-                                        <div className={`absolute right-0.5 top-0.5 w-1.5 h-1.5 bg-slate-900 rounded-full transition-transform ${state.status === 'moving' ? 'scale-y-75' : ''}`}></div>
+                                        <div className={`absolute w-1.5 h-1.5 bg-slate-900 rounded-full transition-all duration-300 ${
+                                          emotion === 'happy' || emotion === 'ecstatic' ? 'translate-y-[-1px]' : 
+                                          emotion === 'sad' ? 'translate-y-[1px]' : ''
+                                        }`}></div>
                                     </div>
                                 </div>
                                 
-                                {/* Mouth */}
-                                <div className={`w-3 h-1 bg-slate-900/20 rounded-full transition-all ${state.status === 'finished' ? 'h-2 w-4 bg-white/40' : isStuckByFriction ? 'w-2 rotate-12' : ''}`}></div>
+                                {/* Mouth: Dynamic based on emotion */}
+                                <div className="relative h-3 flex items-center justify-center">
+                                  {emotion === 'idle' && (
+                                    <div className="w-3 h-1 bg-slate-900/20 rounded-full"></div>
+                                  )}
+                                  {emotion === 'happy' && (
+                                    <div className="w-4 h-2 border-b-2 border-slate-900 rounded-full"></div>
+                                  )}
+                                  {emotion === 'sad' && (
+                                    <div className="w-4 h-2 border-t-2 border-slate-900 rounded-full translate-y-1"></div>
+                                  )}
+                                  {emotion === 'neutral' && (
+                                    <div className="w-4 h-0.5 bg-slate-900 rounded-full"></div>
+                                  )}
+                                  {emotion === 'ecstatic' && (
+                                    <div className="w-3 h-3 bg-white/40 rounded-full border border-emerald-600/20"></div>
+                                  )}
+                                </div>
 
                                 {/* Mass Text */}
                                 <span className="relative z-10 text-[10px] font-black text-white/95 mt-1">{params.mass}kg</span>
@@ -138,20 +177,16 @@ const Track: React.FC<TrackProps> = ({ surface, state, params, onFrictionChange,
                                     </marker>
                                 </defs>
                                 
-                                {/* Center at 140, 110 */}
-                                {/* Fn (Normal Force Up) */}
                                 <line x1="140" y1="80" x2="140" y2={80 - fNormLen} stroke="#94a3b8" strokeWidth="2" markerEnd="url(#arrow-slate)" />
                                 <text x="145" y={80 - fNormLen} fontSize="9" fill="#64748b" className="font-mono">
                                     Fn{showForceValues ? `=${normalVal}N` : ''}
                                 </text>
 
-                                {/* Fg (Gravity Down) */}
                                 <line x1="140" y1="140" x2="140" y2={140 + fGravLen} stroke="#94a3b8" strokeWidth="2" markerEnd="url(#arrow-slate)" />
                                 <text x="145" y={140 + fGravLen + 8} fontSize="9" fill="#64748b" className="font-mono">
                                     mg{showForceValues ? `=${gravVal}N` : ''}
                                 </text>
 
-                                {/* Applied Force (Push Right) */}
                                 {state.currentAppliedForce > 0 && (
                                     <>
                                         <line x1="175" y1="110" x2={175 + fAppLen} y2="110" stroke="#22c55e" strokeWidth="2" markerEnd="url(#arrow-green)" />
@@ -163,7 +198,6 @@ const Track: React.FC<TrackProps> = ({ surface, state, params, onFrictionChange,
                                     </>
                                 )}
 
-                                {/* Friction Force (Resist Left) */}
                                 {state.frictionForce > 0 && (
                                     <>
                                         <line x1="105" y1="110" x2={105 - fFricLen} y2="110" stroke="#ef4444" strokeWidth="2" markerEnd="url(#arrow-red)" />
@@ -175,7 +209,6 @@ const Track: React.FC<TrackProps> = ({ surface, state, params, onFrictionChange,
                                     </>
                                 )}
 
-                                {/* Static Friction Limit (fs,max dashed) */}
                                 {showStaticLimit && (
                                     <g className="opacity-40">
                                         <line 
@@ -226,6 +259,12 @@ const Track: React.FC<TrackProps> = ({ surface, state, params, onFrictionChange,
                         <span className="text-[9px] text-slate-400 uppercase tracking-wider">Net Force</span>
                         <span className={`text-xs font-mono font-bold ${netForce > 0.1 ? 'text-green-600' : 'text-slate-400'}`}>
                             {netForce.toFixed(1)} N
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center mt-0.5 pt-1 border-t border-slate-50/50">
+                        <span className="text-[9px] text-slate-400 uppercase tracking-wider">Coeffs (μs / μk)</span>
+                        <span className="text-[10px] font-mono font-bold text-indigo-600">
+                            {surface.staticFrictionCoeff.toFixed(2)} / {surface.kineticFrictionCoeff.toFixed(2)}
                         </span>
                       </div>
                   </div>
